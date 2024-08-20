@@ -1,40 +1,24 @@
-# Nombre del compilador
+# Compilador y flags
 CC = gcc
+CFLAGS = -Wall -pthread -I./src/mutex
 
-# Opciones del compilador
-CFLAGS = -Wall
+# Archivos fuente y objetos
+SRCS = src/main.c src/barrera/barrera.c src/mutex/mutex.c src/read-write-lock/read-write.c src/semaforo/semaforo.c
+OBJS = $(SRCS:.c=.o)
 
-# Directorios
-SRCDIR = src
-BINDIR = bin
-OBJDIR = build
+# Nombre del ejecutable
+TARGET = bin/hola_mundo
 
-# Archivos fuente
-SRCS = $(wildcard $(SRCDIR)/*.c)
-
-# Archivos objeto
-OBJS = $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SRCS))
-
-# Nombre del programa final
-TARGET = $(BINDIR)/hola_mundo
-
-# Objetivo por defecto
+# Regla para compilar todo
 all: $(TARGET)
 
-# Regla para crear el ejecutable
 $(TARGET): $(OBJS)
-	mkdir -p $(BINDIR)
 	$(CC) $(CFLAGS) -o $@ $^
 
-# Regla para compilar archivos .c a archivos .o
-$(OBJDIR)/%.o: $(SRCDIR)/%.c
-	mkdir -p $(OBJDIR)
-	$(CC) $(CFLAGS) -c -o $@ $<
+# Regla para compilar archivos .c en .o
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
-# Regla para limpiar archivos generados
+# Limpiar los archivos generados
 clean:
-	rm -rf $(OBJDIR) $(BINDIR)
-
-# Regla para ejecutar el programa
-run: $(TARGET)
-	./$(TARGET)
+	rm -f $(OBJS) $(TARGET)
