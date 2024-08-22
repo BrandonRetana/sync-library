@@ -1,33 +1,29 @@
-#include <pthread>
+#include "semaforo.h"
 
-typedef struct struct {
-  int value;
-  pthread_mutex_t mutex;
-  pthread_cond_t cond;
-}semaphore;
-
-void semaphore_init(semaphore *sem, init initial_value){
-  sem->value = initial_value;
+void semaphore_init(semaphore *sem, int initial_permits){
+  sem->permits = initial_permits;
   pthread_mutex_init(&sem->mutex, NULL);
-  pthread_cond_init(&sem->cond, NUll);
+  pthread_cond_init(&sem->cond, NULL);
 }
 
 void semaphore_wait(semaphore *sem){
   pthread_mutex_lock(&sem->mutex);
-  while (sem->value <= 0) {
-    pthread_cond_wait($sem->cond, &sem->mutex);
+  while (sem->permits <= 0) {
+    pthread_cond_wait(&sem->cond, &sem->mutex);
   }
-  sem->value--;
+  sem->permits--;
   pthread_mutex_unlock(&sem->mutex);
 }
 
 void semaphore_signal(semaphore *sem){
-  pthread_mutex_lock(&sem->mutez);
-  sem->value++;
+  pthread_mutex_lock(&sem->mutex);
+  sem->permits++;
   pthread_cond_signal(&sem->cond);
   pthread_mutex_unlock(&sem->mutex);
 }
-void semaphore_destroy(semaphore sem){
+
+void semaphore_destroy(semaphore *sem){
   pthread_mutex_destroy(&sem->mutex);
   pthread_cond_destroy(&sem->cond);
 }
+

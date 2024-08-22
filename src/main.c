@@ -3,42 +3,18 @@
 #include<unistd.h>
 #include<stdlib.h>
 #include<../mutex/mutex.h>
-
-#define NUM_THREADS 5
-
-mutex_t mutex;
-
-void *test(void *arg){
-    long thread_id = (long)arg;
-    printf("Hilo %ld intentando adquirir el mutex...\n", thread_id);
-    mutex_lock(&mutex);
-
-    // Sección crítica
-    printf("Hilo %ld en la sección crítica.\n", thread_id);
-    sleep(1);  // Simula trabajo en la sección crítica
-
-    printf("Hilo %ld liberando el mutex.\n", thread_id);
-    mutex_unlock(&mutex);
-
-    return NULL;    
-}
+#include <../semaforo/semaforo.h>
 
 int main() {
-    pthread_t threads[NUM_THREADS];
+    semaphore sem;
+    semaphore_init(&sem, 1);
 
-    mutex_init(&mutex);
+    printf("Probando el semáforo...\n");
+    semaphore_wait(&sem);
+    printf("Dentro de la sección crítica.\n");
+    semaphore_signal(&sem);
+    printf("Fuera de la sección crítica.\n");
 
-    // Crear hilos
-    for (long i = 0; i < NUM_THREADS; i++) {
-        pthread_create(&threads[i], NULL, test, (void*)i);
-    }
-
-    // Esperar a que los hilos terminen
-    for (int i = 0; i < NUM_THREADS; i++) {
-        pthread_join(threads[i], NULL);
-    }
-
-    mutex_destroy(&mutex);
-
+    semaphore_destroy(&sem);
     return 0;
 }
