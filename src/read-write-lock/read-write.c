@@ -1,6 +1,6 @@
 #include "read-write.h"
 
-void rwlock_init(rwlock_t *rw) {
+void rwlock_init(rwlock *rw) {
     pthread_mutex_init(&rw->lock, NULL);
     pthread_cond_init(&rw->readers_ok, NULL);
     pthread_cond_init(&rw->writers_ok, NULL);
