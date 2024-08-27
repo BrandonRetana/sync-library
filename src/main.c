@@ -7,6 +7,8 @@
 #include <../read-write-lock/read-write.h>
 
 #define NUM_THREADS 5
+int shared_data = 0;  // Variable compartida para la prueba de mutex
+pthread_mutex_t mutex;  // Mutex para la prueba
 
 // Prueba de barrera
 void *test_barrier(void *arg) {
@@ -47,6 +49,18 @@ void *test_rwlock_write(void *arg) {
     sleep(2); // Simular tarea de escritura
     printf("Hilo %ld terminó de escribir\n", pthread_self());
     rwlock_release_write(rw);
+    return NULL;
+}
+
+void *test_mutex(void *arg) {
+    pthread_mutex_lock(&mutex); 
+
+    printf("Hilo %ld está modificando la variable compartida.\n", pthread_self());
+    shared_data++;
+    printf("Hilo %ld ha incrementado la variable compartida a %d\n", pthread_self(), shared_data);
+
+    pthread_mutex_unlock(&mutex);  // Liberar el mutex
+
     return NULL;
 }
 
@@ -95,6 +109,21 @@ int main() {
         pthread_join(threads[i], NULL);
     }
     rwlock_destroy(&rw);
+
+    // Prueba de mutex
+    printf("\nPRUEBA DE MUTEX\n");
+    pthread_mutex_init(&mutex, NULL);
+
+    for (int i = 0; i < NUM_THREADS; i++) {
+        pthread_create(&threads[i], NULL, test_mutex, NULL);
+    }
+    for (int i = 0; i < NUM_THREADS; i++) {
+        pthread_join(threads[i], NULL);
+    }
+    pthread_mutex_destroy(&mutex);
+
+    // Mostrar el valor final de la variable compartida
+    printf("Valor final de la variable compartida: %d\n", shared_data);
 
     return 0;
 }
