@@ -2,70 +2,123 @@
 #include <stdio.h>
 #include<unistd.h>
 #include<stdlib.h>
-#include<../mutex/mutex.h>
 #include <../semaforo/semaforo.h>
 #include <../barrera/barrera.h>
 #include <../read-write-lock/read-write.h>
+#include<../mutex/mutex.h>
 
-#define NUM_READERS 5
-#define NUM_WRITERS 2
-#define NUM_READS 10
-#define NUM_WRITES 5
+#define NUM_THREADS 5
 
-rwlock rwlock_t;
-int shared_data = 0;
-
-void *reader_function(void *arg) {
-    int id = *(int *)arg;
-    for (int i = 0; i < NUM_READS; i++) {
-        rwlock_acquire_read(&rwlock_t);
-        printf("Reader %d: Read shared_data as %d\n", id, shared_data);
-        rwlock_release_read(&rwlock_t);
-    }
+// Prueba de barrera
+void *test_barrier(void *arg) {
+    barrier *bar = (barrier *)arg;
+    printf("Hilo %ld esperando en la barrera\n", pthread_self());
+    barrier_wait(bar);
+    printf("Hilo %ld ha cruzado la barrera\n", pthread_self());
     return NULL;
 }
 
-void *writer_function(void *arg) {
-    int id = *(int *)arg;
-    for (int i = 0; i < NUM_WRITES; i++) {
-        rwlock_acquire_write(&rwlock_t);
-        shared_data++;
-        printf("Writer %d: Incremented shared_data to %d\n", id, shared_data);
-        rwlock_release_write(&rwlock_t);
-    }
+// Prueba de semáforo
+void *test_semaphore(void *arg) {
+    semaphore *sem = (semaphore *)arg;
+    semaphore_wait(sem);
+    printf("Hilo %ld ha pasado el semáforo\n", pthread_self());
+    sleep(1); // ejemplo de alguna tarea
+    printf("Hilo %ld va a liberar el semáforo\n", pthread_self());
+    semaphore_signal(sem);
     return NULL;
 }
+
+
+// Prueba de read-write lock
+void *test_rwlock_read(void *arg) {
+    rwlock *rw = (rwlock *)arg;
+    rwlock_acquire_read(rw);
+    printf("Hilo %ld leyendo\n", pthread_self());
+    sleep(1); // Simular tarea de lectura
+    printf("Hilo %ld terminó de leer\n", pthread_self());
+    rwlock_release_read(rw);
+    return NULL;
+}
+
+void *test_rwlock_write(void *arg) {
+    rwlock *rw = (rwlock *)arg;
+    rwlock_acquire_write(rw);
+    printf("Hilo %ld escribiendo\n", pthread_self());
+    sleep(2); // Simular tarea de escritura
+    printf("Hilo %ld terminó de escribir\n", pthread_self());
+    rwlock_release_write(rw);
+    return NULL;
+}
+
+// Prueba de mutex
+void *test_mutex(void *arg) {
+    mutex_t *mutex = (mutex_t *)arg;
+    mutex_lock(mutex);
+    printf("Hilo %ld ha pasado el mutex\n", pthread_self());
+    sleep(1); //ejemplo de alguna tarea
+    printf("Hilo %ld va a liberar el mutex\n", pthread_self());
+    mutex_unlock(mutex);
+    return NULL;
+}
+
 
 int main() {
-    pthread_t readers[NUM_READERS], writers[NUM_WRITERS];
-    int reader_ids[NUM_READERS], writer_ids[NUM_WRITERS];
 
-    rwlock_init(&rwlock_t);
+    pthread_t threads[NUM_THREADS];
 
-    // Create reader threads
-    for (int i = 0; i < NUM_READERS; i++) {
-        reader_ids[i] = i;
-        pthread_create(&readers[i], NULL, reader_function, &reader_ids[i]);
+    // Prueba de barrera
+    printf("PRUEBA DE LA BARRERA\n");
+    barrier bar;
+    barrier_init(&bar, NUM_THREADS);
+    for (int i = 0; i < NUM_THREADS; i++) {
+        pthread_create(&threads[i], NULL, test_barrier, &bar);
     }
-
-    // Create writer threads
-    for (int i = 0; i < NUM_WRITERS; i++) {
-        writer_ids[i] = i;
-        pthread_create(&writers[i], NULL, writer_function, &writer_ids[i]);
+    for (int i = 0; i < NUM_THREADS; i++) {
+        pthread_join(threads[i], NULL);
     }
+    barrier_destroy(&bar);
 
-    // Wait for all threads to complete
-    for (int i = 0; i < NUM_READERS; i++) {
-        pthread_join(readers[i], NULL);
+
+    // Prueba de semáforo
+    printf("\nPRUEBA DEL SEMÁFORO\n");
+    semaphore sem;
+    semaphore_init(&sem, 3); // Permitir que 3 hilos entren simultáneamente
+    for (int i = 0; i < NUM_THREADS; i++) {
+        pthread_create(&threads[i], NULL, test_semaphore, &sem);
     }
-    for (int i = 0; i < NUM_WRITERS; i++) {
-        pthread_join(writers[i], NULL);
+    for (int i = 0; i < NUM_THREADS; i++) {
+        pthread_join(threads[i], NULL);
     }
+    semaphore_destroy(&sem);
 
-    rwlock_destroy(&rwlock_t);
+    // Prueba de read-write lock
+    printf("\nPRUEBA DEL READ-WRITE LOCK\n");
+    rwlock rw;
+    rwlock_init(&rw);
+    for (int i = 0; i < NUM_THREADS; i++) {
+        if (i % 2 == 0) {
+            pthread_create(&threads[i], NULL, test_rwlock_read, &rw);
+        } else {
+            pthread_create(&threads[i], NULL, test_rwlock_write, &rw);
+        }
+    }
+    for (int i = 0; i < NUM_THREADS; i++) {
+        pthread_join(threads[i], NULL);
+    }
+    rwlock_destroy(&rw);
 
-    printf("Final shared_data value: %d\n", shared_data);
+    // Prueba de mutex
+    printf("\nPRUEBA DEL MUTEX\n");
+    mutex_t mutex;
+    mutex_init(&mutex);
+    for (int i = 0; i < NUM_THREADS; i++) {
+        pthread_create(&threads[i], NULL, test_mutex, &mutex);
+    }
+    for (int i = 0; i < NUM_THREADS; i++) {
+        pthread_join(threads[i], NULL);
+    }
+    mutex_destroy(&mutex);
 
     return 0;
 }
-
