@@ -25,9 +25,9 @@ Estas implementaciones se han creado desde cero utilizando los mutex y otras fun
 Para instalar y configurar el proyecto en tu entorno local, sigue los siguientes pasos:
 
 1. **Clonar el repositorio**:
-   ```bash
+```bash
    git clone https://github.com/BrandonRetana/sync-library.git
-   ```
+```
 2. Moverse la carpeta de scripts
 ```bash
   cd sync-library/scripts
