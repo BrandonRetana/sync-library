@@ -26,15 +26,15 @@ Para instalar y configurar el proyecto en tu entorno local, sigue los siguientes
 
 1. **Clonar el repositorio**:
 ```bash
-   git clone https://github.com/BrandonRetana/sync-library.git
+git clone https://github.com/BrandonRetana/sync-library.git
 ```
 2. Moverse la carpeta de scripts
 ```bash
-  cd sync-library/scripts
+cd sync-library/scripts
 ```
 3. Dar permisos de ejecución al archivo init.
 ```bash
-  chmod +x
+chmod +x
 ```
 4. Ejecutar el script init.
 ```bash
