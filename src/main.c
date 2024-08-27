@@ -5,7 +5,6 @@
 #include <../semaforo/semaforo.h>
 #include <../barrera/barrera.h>
 #include <../read-write-lock/read-write.h>
-#include<../mutex/mutex.h>
 
 #define NUM_THREADS 5
 
@@ -48,17 +47,6 @@ void *test_rwlock_write(void *arg) {
     sleep(2); // Simular tarea de escritura
     printf("Hilo %ld terminó de escribir\n", pthread_self());
     rwlock_release_write(rw);
-    return NULL;
-}
-
-// Prueba de mutex
-void *test_mutex(void *arg) {
-    mutex_t *mutex = (mutex_t *)arg;
-    mutex_lock(mutex);
-    printf("Hilo %ld ha pasado el mutex\n", pthread_self());
-    sleep(1); //ejemplo de alguna tarea
-    printf("Hilo %ld va a liberar el mutex\n", pthread_self());
-    mutex_unlock(mutex);
     return NULL;
 }
 
@@ -107,18 +95,6 @@ int main() {
         pthread_join(threads[i], NULL);
     }
     rwlock_destroy(&rw);
-
-    // Prueba de mutex
-    printf("\nPRUEBA DEL MUTEX\n");
-    mutex_t mutex;
-    mutex_init(&mutex);
-    for (int i = 0; i < NUM_THREADS; i++) {
-        pthread_create(&threads[i], NULL, test_mutex, &mutex);
-    }
-    for (int i = 0; i < NUM_THREADS; i++) {
-        pthread_join(threads[i], NULL);
-    }
-    mutex_destroy(&mutex);
 
     return 0;
 }
