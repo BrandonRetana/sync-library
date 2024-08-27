@@ -7,7 +7,7 @@ SRCS = src/main.c src/barrera/barrera.c src/mutex/mutex.c src/read-write-lock/re
 OBJS = $(SRCS:.c=.o)
 
 # Nombre del ejecutable
-TARGET = bin/hola_mundo
+TARGET = bin/main
 
 # Regla para compilar todo
 all: $(TARGET)
