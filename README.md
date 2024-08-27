@@ -28,15 +28,23 @@ Para instalar y configurar el proyecto en tu entorno local, sigue los siguientes
 ```bash
 git clone https://github.com/BrandonRetana/sync-library.git
 ```
-2. Moverse la carpeta de scripts
+2. Moverse a la carpeta del proyecto
 ```bash
-cd sync-library/scripts
+cd sync-library/
 ```
-3. Dar permisos de ejecución al archivo init.
+3. Actualizar el sistema operativo
 ```bash
-chmod +x
+sudo dnf update
 ```
-4. Ejecutar el script init.
+4. Instalar la biblioteca dev tools
 ```bash
-./init.sh
+sudo dnf groupinstall "Development Tools"
+```
+5. Ejecutar la instruccion de compilacion del makefile
+```bash
+make
+```
+6. Ejecutar el binario creado
+```bash
+./bin/main
 ```
